@@ -59,23 +59,6 @@ function App() {
 
   const [exchangeRate, setExchangeRate] = React.useState<ExchangeRate>();
 
-  const onSelectCurrencyTop = React.useCallback((currency: Currency) => {
-    setSelectedCurrencyTop(currency)
-    setLatestCurrenciesTop(addCurrencyToList(currency))
-
-    getExchangeRateFor(currency.code).then(
-      setExchangeRate
-    )
-  }, [])
-  const onSelectCurrencyBottom = React.useCallback((currency: Currency) => {
-    setSelectedCurrencyBottom(currency)
-    setLatestCurrenciesBottom(addCurrencyToList(currency))
-
-    getExchangeRateFor(currency.code).then(
-      setExchangeRate
-    )
-  }, [])
-
   React.useEffect(() => {
     getLatestCurrenciesList().then(setCurrencies).catch(console.log)
 
@@ -90,22 +73,47 @@ function App() {
   }, [])
 
 
-  const onChangeAmountTop = React.useCallback(event => updateExchange({
-    input: event.target.value,
+  const onChangeAmountTop = React.useCallback((source, rest: Partial<ExchangeProps> = {}) => updateExchange({
+    input: typeof source === 'object' ? source.target.value : source,
     inputCurrency: selectedCurrencyTop,
     outputCurrency: selectedCurrencyBottom,
     updateInput: setAmountTop,
     updateOutput: setAmountBottom,
     exchangeRate,
+    ...rest
   }), [selectedCurrencyTop, selectedCurrencyBottom, exchangeRate])
-  const onChangeAmountBottom = React.useCallback(event => updateExchange({
-    input: event.target.value,
+  const onChangeAmountBottom = React.useCallback((source, rest: Partial<ExchangeProps> = {}) => updateExchange({
+    input: typeof source === 'object' ? source.target.value : source,
     inputCurrency: selectedCurrencyBottom,
     outputCurrency: selectedCurrencyTop,
     updateInput: setAmountBottom,
     updateOutput: setAmountTop,
     exchangeRate,
+    ...rest
   }), [selectedCurrencyTop, selectedCurrencyBottom, exchangeRate])
+
+  const onSelectCurrencyTop = React.useCallback((currency: Currency) => {
+    setSelectedCurrencyTop(currency)
+    setLatestCurrenciesTop(addCurrencyToList(currency))
+
+    getExchangeRateFor(currency.code).then(
+      (rate) => {
+        setExchangeRate(rate)
+        onChangeAmountTop(amountTop, { exchangeRate: rate })
+      }
+    )
+  }, [amountTop])
+  const onSelectCurrencyBottom = React.useCallback((currency: Currency) => {
+    setSelectedCurrencyBottom(currency)
+    setLatestCurrenciesBottom(addCurrencyToList(currency))
+
+    getExchangeRateFor(currency.code).then(
+      (rate) => {
+        setExchangeRate(rate)
+        onChangeAmountTop(amountBottom, { exchangeRate: rate })
+      }
+    )
+  }, [amountBottom])
 
 
   return (
