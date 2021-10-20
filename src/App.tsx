@@ -1,11 +1,49 @@
 import * as React from 'react';
 import { Container, Box, Paper, Grid } from '@mui/material';
-import { getLatestCurrenciesList, toAmount } from './utils';
+import { getExchangeRateFor, getLatestCurrenciesList, toAmount } from './utils';
 import CurrencySelector from './components/CurrencySelector';
 import LatestCurrencies from './components/LatestCurrencies'
 import ImportExportIcon from '@mui/icons-material/ImportExport';
-import type { Currency } from './types'
+import type { Currency, ExchangeRate } from './types'
 import CurrencyInput from './components/CurrencyInput';
+
+const MAX_LATEST_HISTORY_SIZE = 5
+
+const addCurrencyToList = (newCurrency: Currency) => (currentList: Array<Currency>) => {
+  if (!currentList.find((c) => c.code === newCurrency.code)) {
+    return [newCurrency].concat(currentList.slice(0, MAX_LATEST_HISTORY_SIZE - 1))
+  }
+  return currentList
+}
+
+type CurrencyInputVal = string | number
+
+type ExchangeProps = {
+  input: CurrencyInputVal;
+  updateInput: React.Dispatch<React.SetStateAction<CurrencyInputVal>>;
+  updateOutput: React.Dispatch<React.SetStateAction<CurrencyInputVal>>;
+  inputCurrency: Currency | null;
+  outputCurrency: Currency | null;
+  exchangeRate: ExchangeRate | undefined;
+}
+const updateExchange = ({
+  input,
+  updateInput,
+  updateOutput,
+  inputCurrency,
+  outputCurrency,
+  exchangeRate,
+}: ExchangeProps) => {
+  updateInput(() => input)
+
+  if (inputCurrency != null && outputCurrency != null && exchangeRate != null) {
+    const amount = +input
+    const output = exchangeRate.currency === inputCurrency.code 
+      ? amount * exchangeRate.rate[outputCurrency.code]
+      : amount / exchangeRate.rate[inputCurrency.code]
+    updateOutput(() => output.toFixed(2))
+  }
+}
 
 function App() {
   const [currencies, setCurrencies] = React.useState<Array<Currency>>([])
@@ -16,23 +54,26 @@ function App() {
   const [latestCurrenciesTop, setLatestCurrenciesTop] = React.useState<Array<Currency>>([])
   const [latestCurrenciesBottom, setLatestCurrenciesBottom] = React.useState<Array<Currency>>([])
 
-  const [amountTop, setAmountTop] = React.useState<number | null>()
-  const [amountBottom, setAmountBottom] = React.useState<number | null>()
+  const [amountTop, setAmountTop] = React.useState<CurrencyInputVal>('')
+  const [amountBottom, setAmountBottom] = React.useState<CurrencyInputVal>('')
 
-  const addCurrencyToList = React.useCallback((newCurrency: Currency) => (currentList: Array<Currency>) => {
-    if (!currentList.find((c) => c.code === newCurrency.code)) {
-      return [newCurrency].concat(currentList)
-    }
-    return currentList
-  }, [])
+  const [exchangeRate, setExchangeRate] = React.useState<ExchangeRate>();
 
   const onSelectCurrencyTop = React.useCallback((currency: Currency) => {
     setSelectedCurrencyTop(currency)
     setLatestCurrenciesTop(addCurrencyToList(currency))
+
+    getExchangeRateFor(currency.code).then(
+      setExchangeRate
+    )
   }, [])
   const onSelectCurrencyBottom = React.useCallback((currency: Currency) => {
     setSelectedCurrencyBottom(currency)
     setLatestCurrenciesBottom(addCurrencyToList(currency))
+
+    getExchangeRateFor(currency.code).then(
+      setExchangeRate
+    )
   }, [])
 
   React.useEffect(() => {
@@ -49,13 +90,22 @@ function App() {
   }, [])
 
 
-  const onChangeAmountTop = React.useCallback(event => {
-    const amount = toAmount(event.target.value)
-    setAmountTop(() => amount)
-
-
-  }, [])
-  const onChangeAmountBottom = React.useCallback(event => setAmountBottom(() => toAmount(event.target.value)), [])
+  const onChangeAmountTop = React.useCallback(event => updateExchange({
+    input: event.target.value,
+    inputCurrency: selectedCurrencyTop,
+    outputCurrency: selectedCurrencyBottom,
+    updateInput: setAmountTop,
+    updateOutput: setAmountBottom,
+    exchangeRate,
+  }), [selectedCurrencyTop, selectedCurrencyBottom, exchangeRate])
+  const onChangeAmountBottom = React.useCallback(event => updateExchange({
+    input: event.target.value,
+    inputCurrency: selectedCurrencyBottom,
+    outputCurrency: selectedCurrencyTop,
+    updateInput: setAmountBottom,
+    updateOutput: setAmountTop,
+    exchangeRate,
+  }), [selectedCurrencyTop, selectedCurrencyBottom, exchangeRate])
 
 
   return (
@@ -68,7 +118,7 @@ function App() {
               <CurrencySelector value={selectedCurrencyTop} onSelect={onSelectCurrencyTop} label="Select currency" currencies={currencies} />
             </Grid>
             <Grid item>
-              <CurrencyInput value={amountTop} onChange={onChangeAmountTop} label="Amount" />
+              <CurrencyInput value={amountTop} onChange={onChangeAmountTop} label="Amount" disabled={selectedCurrencyTop == null} />
             </Grid>
           </Grid>
 
@@ -78,7 +128,7 @@ function App() {
 
           <Grid container direction="column" spacing={2} alignContent="center" sx={{ position: 'relative', paddingBottom: '40px' }}>
             <Grid item>
-              <CurrencyInput value={amountBottom} onChange={onChangeAmountBottom} label="Amount" />
+              <CurrencyInput value={amountBottom} onChange={onChangeAmountBottom} label="Amount" disabled={selectedCurrencyBottom == null} />
             </Grid>
             <Grid item>
               <CurrencySelector value={selectedCurrencyBottom} onSelect={onSelectCurrencyBottom} label="Select currency" currencies={currencies} />
