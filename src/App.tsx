@@ -1,11 +1,16 @@
-import * as React from 'react';
-import { Container, Box, Paper, Grid } from '@mui/material';
-import { getExchangeRateFor, getLatestCurrenciesList, toAmount } from './utils';
+import React from 'react';
+
+import Container from '@mui/material/Container'
+import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
+import Grid from '@mui/material/Grid'
+import ImportExportIcon from '@mui/icons-material/ImportExport';
+
+import { getExchangeRateFor, getLatestCurrenciesList } from './utils';
 import CurrencySelector from './components/CurrencySelector';
 import LatestCurrencies from './components/LatestCurrencies'
-import ImportExportIcon from '@mui/icons-material/ImportExport';
-import type { Currency, ExchangeRate } from './types'
 import CurrencyInput from './components/CurrencyInput';
+import type { Currency, ExchangeRate } from './types'
 
 const MAX_LATEST_HISTORY_SIZE = 5
 

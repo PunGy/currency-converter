@@ -1,8 +1,11 @@
-import { Chip, Stack, StackProps } from '@mui/material';
-import * as React from 'react'
-import { Currency } from '../../types';
+import React from 'react'
+
+import Chip from '@mui/material/Chip'
+import Stack, { StackProps } from '@mui/material/Stack'
 import { grey } from '@mui/material/colors';
-import { alpha } from '@mui/system'
+import { alpha } from '@mui/system/colorManipulator'
+
+import { Currency } from '../../types';
 
 
 export interface LatestCurrenciesProps extends StackProps {

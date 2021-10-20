@@ -1,5 +1,9 @@
 import * as React from 'react'
-import { Autocomplete, createFilterOptions, Box, TextField } from '@mui/material'
+
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
+import TextField from '@mui/material/TextField'
+import Box from '@mui/material/Box'
+
 import type { Currency } from '../../types'
 
 interface CurrencySelectorProps {
