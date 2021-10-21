@@ -14,7 +14,7 @@ import type { Currency, ExchangeRate } from './types'
 
 const MAX_LATEST_HISTORY_SIZE = 5
 
-const addCurrencyToList = (newCurrency: Currency) => (currentList: Array<Currency>) => {
+const addCurrencyToList = (newCurrency: Currency, currentList: Array<Currency>) => {
   if (!currentList.find((c) => c.code === newCurrency.code)) {
     return [newCurrency].concat(currentList.slice(0, MAX_LATEST_HISTORY_SIZE - 1))
   }
@@ -46,41 +46,14 @@ const updateExchange = ({
     const output = exchangeRate.currency === inputCurrency.code 
       ? amount * exchangeRate.rate[outputCurrency.code]
       : amount / exchangeRate.rate[inputCurrency.code]
+    console.log(
+      'input currency', inputCurrency, '\n',
+      'output currency', outputCurrency, '\n',
+      'amount', amount, '\n',
+      'output', output, '\n',
+    )
     updateOutput(() => output.toFixed(2))
   }
-}
-
-type SelectCurrencyHandlerProps = {
-  amount: CurrencyInputVal;
-  currency: Currency;
-  updateInput: React.Dispatch<React.SetStateAction<Currency | null>>;
-  updateCurrencyList: React.Dispatch<React.SetStateAction<Array<Currency>>>;
-  setExchangeRate: React.Dispatch<React.SetStateAction<ExchangeRate | undefined>>;
-  performExchangeOnField: (source: any, rest?: Partial<ExchangeProps>) => void;
-  localStorageKey: string;
-}
-const selectCurrencyHandler = ({
-  amount,
-  currency,
-  updateInput,
-  updateCurrencyList,
-  setExchangeRate,
-  performExchangeOnField,
-  localStorageKey,
-}: SelectCurrencyHandlerProps) => {
-  updateInput(currency)
-  updateCurrencyList((list) => {
-    const newCurrencyList = addCurrencyToList(currency)(list)
-    localStorage.setItem(localStorageKey, JSON.stringify(newCurrencyList))
-    return newCurrencyList
-  })
-
-  getExchangeRateFor(currency.code).then(
-    (rate) => {
-      setExchangeRate(rate)
-      performExchangeOnField(amount, { exchangeRate: rate })
-    }
-  )
 }
 
 function App() {
@@ -130,24 +103,35 @@ function App() {
     ...rest
   }), [selectedCurrencyTop, selectedCurrencyBottom, exchangeRate])
 
-  const onSelectCurrencyTop = React.useCallback((currency: Currency) => selectCurrencyHandler({
-    amount: amountTop,
-    currency,
-    updateInput: setSelectedCurrencyTop,
-    updateCurrencyList: setLatestCurrenciesTop,
-    setExchangeRate,
-    performExchangeOnField: onChangeAmountTop,
-    localStorageKey: 'latest-currencies-top',
-  }), [amountTop])
-  const onSelectCurrencyBottom = React.useCallback((currency: Currency) => selectCurrencyHandler({
-    amount: amountTop,
-    currency,
-    updateInput: setSelectedCurrencyBottom,
-    updateCurrencyList: setLatestCurrenciesBottom,
-    setExchangeRate,
-    performExchangeOnField: onChangeAmountTop,
-    localStorageKey: 'latest-currencies-bottom',
-  }), [amountBottom])
+  const onSelectCurrencyTop = React.useCallback((currency: Currency) => {
+    if (selectedCurrencyTop?.code === currency.code) return
+
+    setSelectedCurrencyTop(currency)
+    setLatestCurrenciesTop((list) => {
+      const newCurrencyList = addCurrencyToList(currency, list)
+      localStorage.setItem('latest-currencies-top', JSON.stringify(newCurrencyList))
+      return newCurrencyList
+    })
+
+    getExchangeRateFor(currency.code).then(
+      (rate) => {
+        setExchangeRate(rate)
+        onChangeAmountTop(amountTop, { inputCurrency: currency, exchangeRate: rate })
+      }
+    )
+  }, [amountTop, selectedCurrencyTop, onChangeAmountTop])
+  const onSelectCurrencyBottom = React.useCallback((currency: Currency) => {
+    if (selectedCurrencyBottom?.code === currency.code) return
+
+    setSelectedCurrencyBottom(currency)
+    setLatestCurrenciesBottom((list) => {
+      const newCurrencyList = addCurrencyToList(currency, list)
+      localStorage.setItem('latest-currencies-bottom', JSON.stringify(newCurrencyList))
+      return newCurrencyList
+    })
+
+    onChangeAmountTop(amountTop, { outputCurrency: currency })
+  }, [amountTop, onChangeAmountTop, selectedCurrencyBottom])
 
 
   return (

@@ -28,6 +28,7 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({ currencies, label, 
       value={value}
       autoHighlight
       getOptionLabel={({ code }) => code.toUpperCase()}
+      isOptionEqualToValue={(option, value) => option.code === value.code}
       renderOption={(props, option) => (
         <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
           {/* <img
