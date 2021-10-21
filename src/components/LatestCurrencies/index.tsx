@@ -14,7 +14,7 @@ export interface LatestCurrenciesProps extends StackProps {
 }
 
 
-const LatestCurrencies: React.FC<LatestCurrenciesProps> = ({ list, selected, onSelectCurrency, ...props }) => (
+const LatestCurrencies: React.FC<LatestCurrenciesProps> = React.memo(({ list, selected, onSelectCurrency, ...props }) => (
     <Stack direction="row" spacing={1} {...props}>
         {list.map(currency => {
             const isSelected = selected !== null && currency.code === selected.code
@@ -30,12 +30,12 @@ const LatestCurrencies: React.FC<LatestCurrenciesProps> = ({ list, selected, onS
                     color={isSelected ? 'primary' : 'default'}
                     label={currency.code.toUpperCase()} 
                     onClick={() => onSelectCurrency(currency)}
-                    clickable 
+                    clickable
                     key={currency.code} 
                 />
             )
         })}
     </Stack>
-)
+))
 
 export default LatestCurrencies

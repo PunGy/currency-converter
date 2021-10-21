@@ -18,7 +18,7 @@ const filterOptions = createFilterOptions({
   stringify: (option: Currency) => option.code + option.label,
 })
 
-const CurrencySelector: React.FC<CurrencySelectorProps> = ({ currencies, label, onSelect, value }) => {
+const CurrencySelector: React.FC<CurrencySelectorProps> = React.memo(({ currencies, label, onSelect, value }) => {
   return (
     <Autocomplete
       onChange={(_, value) => value && onSelect(value)}
@@ -30,14 +30,7 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({ currencies, label, 
       getOptionLabel={({ code }) => code.toUpperCase()}
       isOptionEqualToValue={(option, value) => option.code === value.code}
       renderOption={(props, option) => (
-        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
-          {/* <img
-            loading="lazy"
-            width="20"
-            src={`https://flagcdn.com/w20/${option.countryCode}.png`}
-            srcSet={`https://flagcdn.com/w40/${option.countryCode}.png 2x`}
-            alt=""
-          /> */}
+        <Box component="li" {...props}>
           ({option.code.toUpperCase()}) {option.label}
         </Box>
       )}
@@ -53,6 +46,6 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({ currencies, label, 
       )}
     />
   )
-};
+});
 
 export default CurrencySelector
