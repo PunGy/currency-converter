@@ -46,12 +46,7 @@ const updateExchange = ({
     const output = exchangeRate.currency === inputCurrency.code 
       ? amount * exchangeRate.rate[outputCurrency.code]
       : amount / exchangeRate.rate[inputCurrency.code]
-    console.log(
-      'input currency', inputCurrency, '\n',
-      'output currency', outputCurrency, '\n',
-      'amount', amount, '\n',
-      'output', output, '\n',
-    )
+
     updateOutput(() => output.toFixed(2))
   }
 }

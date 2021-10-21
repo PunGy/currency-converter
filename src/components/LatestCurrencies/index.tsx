@@ -3,7 +3,6 @@ import React from 'react'
 import Chip from '@mui/material/Chip'
 import Stack, { StackProps } from '@mui/material/Stack'
 import { grey } from '@mui/material/colors';
-import { alpha } from '@mui/system/colorManipulator'
 
 import { Currency } from '../../types';
 
@@ -22,10 +21,10 @@ const LatestCurrencies: React.FC<LatestCurrenciesProps> = ({ list, selected, onS
             return (
                 <Chip 
                     sx={{
-                        backgroundColor: (theme) => isSelected ? alpha(theme.palette.primary.light, 0.4) : grey[100],
+                        backgroundColor: (theme) => isSelected ? theme.palette.primary.light : grey[100],
                         border: theme => `1px solid ${isSelected ? theme.palette.primary.dark : grey[600]}`,
                         '&:hover': {
-                            backgroundColor: (theme) => isSelected ? alpha(theme.palette.primary.light, 0.6) : grey[300]
+                            backgroundColor: (theme) => isSelected ? theme.palette.primary.light : grey[300]
                         }
                     }}
                     color={isSelected ? 'primary' : 'default'}
