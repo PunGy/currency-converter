@@ -40,6 +40,7 @@ const updateExchange = ({
   exchangeRate,
 }: ExchangeProps) => {
   updateInput(() => input)
+  console.log(inputCurrency, outputCurrency, exchangeRate)
 
   if (inputCurrency != null && outputCurrency != null && exchangeRate != null) {
     const amount = +input
@@ -76,6 +77,17 @@ function App() {
     if (latestBottom != null) {
       setLatestCurrenciesBottom(JSON.parse(latestBottom))
     }
+
+    const lastTop = localStorage.getItem('last-currency-top')
+    const lastBottom = localStorage.getItem('last-currency-bottom')
+    if (lastTop != null) {
+      const currency = JSON.parse(lastTop)
+      getExchangeRateFor(currency.code).then(setExchangeRate)
+      setSelectedCurrencyTop(JSON.parse(lastTop))
+    }
+    if (lastBottom != null) {
+      setSelectedCurrencyBottom(JSON.parse(lastBottom))
+    }
   }, [])
 
 
@@ -107,6 +119,7 @@ function App() {
       localStorage.setItem('latest-currencies-top', JSON.stringify(newCurrencyList))
       return newCurrencyList
     })
+    localStorage.setItem('last-currency-top', JSON.stringify(currency))
 
     getExchangeRateFor(currency.code).then(
       (rate) => {
@@ -121,9 +134,12 @@ function App() {
     setSelectedCurrencyBottom(currency)
     setLatestCurrenciesBottom((list) => {
       const newCurrencyList = addCurrencyToList(currency, list)
-      localStorage.setItem('latest-currencies-bottom', JSON.stringify(newCurrencyList))
+      if (newCurrencyList.length !== list.length) {
+        localStorage.setItem('latest-currencies-bottom', JSON.stringify(newCurrencyList))
+      }
       return newCurrencyList
     })
+    localStorage.setItem('last-currency-bottom', JSON.stringify(currency))
 
     onChangeAmountTop(amountTop, { outputCurrency: currency })
   }, [amountTop, onChangeAmountTop, selectedCurrencyBottom])

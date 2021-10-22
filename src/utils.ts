@@ -10,7 +10,7 @@ export const getLatestCurrenciesList: () => Promise<Array<Currency>> = () => cal
 ))
 
 export const getExchangeRateFor = (currency: string): Promise<ExchangeRate> => (
-    callApi<{ date: string } & { [currency: string]: Record<string, number> }>(`currencies/${currency}.json`)
+    callApi<{ date: string } & { [currency: string]: Record<string, number> }>(`currencies/${currency}.min.json`)
         .then(exchangeRate => ({
             date: exchangeRate.date,
             currency,
