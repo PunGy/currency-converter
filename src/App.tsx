@@ -40,13 +40,19 @@ const updateExchange = ({
   exchangeRate,
 }: ExchangeProps) => {
   updateInput(() => input)
-  console.log(inputCurrency, outputCurrency, exchangeRate)
 
   if (inputCurrency != null && outputCurrency != null && exchangeRate != null) {
     const amount = +input
-    const output = exchangeRate.currency === inputCurrency.code 
-      ? amount * exchangeRate.rate[outputCurrency.code]
-      : amount / exchangeRate.rate[inputCurrency.code]
+    let output: number
+
+    if (exchangeRate.currency === inputCurrency.code) {
+      output = amount * exchangeRate.rate[outputCurrency.code]
+    } else if (exchangeRate.currency === outputCurrency.code) {
+      output = amount / exchangeRate.rate[inputCurrency.code]
+    } else {
+      const temp = amount / exchangeRate.rate[exchangeRate.currency]
+      output = temp * exchangeRate.rate[outputCurrency.code]
+    }
 
     updateOutput(() => output.toFixed(2))
   }

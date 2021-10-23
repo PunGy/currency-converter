@@ -12,7 +12,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
+import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -92,10 +92,12 @@ registerRoute(
   })
 );
 
-// registerRoute(
-//   /^https:\/\/cdn\.jsdelivr\.net.*\/currencies\/.*\.json$/,
-//   async (props) => {
-//     console.log(1, props)
-//     return new Response()
-//   }
-// )
+registerRoute(
+  /^https:\/\/cdn\.jsdelivr\.net.*\/currencies\/.*\.json$/,
+  new NetworkFirst({
+    cacheName: 'currency',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 10 })
+    ]
+  })
+)
