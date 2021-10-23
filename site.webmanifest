@@ -16,7 +16,7 @@
     ],
     "theme_color": "#ffffff",
     "background_color": "#ffffff",
-    "start_url": "/currency-converter",
-    "scope": "/currency-converter",
+    "start_url": "/currency-converter/",
+    "scope": "/currency-converter/",
     "display": "standalone"
 }
