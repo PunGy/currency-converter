@@ -48,6 +48,11 @@ overrides:
         singleline:
           delimiter: semi
           requireLast: true
+- files:
+  - "*.tsx"
+  rules:
+    no-use-before-define: off # for placing styles after the logic
+
 
 rules:
   semi:
