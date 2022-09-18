@@ -4,12 +4,12 @@ import { grey } from '@mui/material/colors'
 import { Currency, CurrencyList } from '#app/types'
 import { pipe } from 'fp-ts/lib/function'
 
-export interface CurrenciesNavigatorProps {
+export interface CurrenciesHistoryProps {
     list: CurrencyList;
     active: Currency | null;
 }
 
-export const CurrenciesNavigator: FC<CurrenciesNavigatorProps> = ({ list, active }) => (
+export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, active }) => (
     <Stack direction="row" spacing={1}>
         {list.map(currency => (
             pipe(

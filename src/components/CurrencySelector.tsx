@@ -15,14 +15,16 @@ const filterOptions = createFilterOptions({
 export interface CurrencySelectorInputProps {
     currencies: CurrencyList;
     value: Currency | null;
+    select: (currency: Currency) => void;
 }
-export const CurrencySelectorInput: FC<CurrencySelectorInputProps> = ({ value, currencies }) => (
+export const CurrencySelectorInput: FC<CurrencySelectorInputProps> = ({ value, currencies, select }) => (
     <Autocomplete
         value={value}
         options={currencies}
         filterOptions={filterOptions}
         isOptionEqualToValue={(option, value) => option.code === value.code}
         getOptionLabel={({ code }) => code.toUpperCase()}
+        onChange={(_, value) => value && select(value)}
         autoHighlight
         renderOption={(props, option) => (
             <Box component="li" {...props as BoxProps}>
@@ -42,8 +44,9 @@ export const CurrencySelectorInput: FC<CurrencySelectorInputProps> = ({ value, c
 export interface CurrencySelectorProps {
     currencies: CurrenciesResponse;
     value: Currency | null;
+    select: (currency: Currency) => void;
 }
-export const CurrencySelector: FC<CurrencySelectorProps> = ({ currencies: currenciesResponse, value }) => (
+export const CurrencySelector: FC<CurrencySelectorProps> = ({ currencies: currenciesResponse, value, select }) => (
     pipe(
         currenciesResponse,
         foldO(
@@ -53,7 +56,7 @@ export const CurrencySelector: FC<CurrencySelectorProps> = ({ currencies: curren
                     currenciesE,
                     foldE(
                         () => <CurrencyInput disabled value="Unable to load currencies" />,
-                        (currencies) => <CurrencySelectorInput currencies={currencies} value={value} />,
+                        (currencies) => <CurrencySelectorInput select={select} currencies={currencies} value={value} />,
                     ),
                 )
             ),

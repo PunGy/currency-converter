@@ -1,0 +1,3 @@
+export const EXCHANGE_DATE_KEY = 'EXCHANGE_DATE'
+
+export const EXCHANGE_RATE_KEY = 'EXCHANGE_RATE'

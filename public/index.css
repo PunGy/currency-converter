@@ -6,6 +6,11 @@
     all: unset;
     display: revert;
   }
+
+  #root {
+    height: 100vh;
+  }
+
   /* Preferred box-sizing value */
   *,
   *::before,
