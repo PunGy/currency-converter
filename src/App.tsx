@@ -14,6 +14,7 @@ import { CurrencyBox } from './components/CurrencyBox'
 import { useListOfCurrencies, exchangeRate$, ExchangeRateResponse, APIError } from './network/currencies'
 import { SwapCurrenciesButton } from './components/SwapCurrenciesButton'
 import { Currency, CurrencyList, ExchangeRate, InputTuple, InputValue } from './types'
+import * as cacheLocalStorage from '#app/localStorage'
 
 const [currencyA$, setCurrencyA] = createSignal<Currency>()
 const [currencyB$, setCurrencyB] = createSignal<Currency>()
@@ -21,20 +22,35 @@ const [currencyB$, setCurrencyB] = createSignal<Currency>()
 const [useCurrencyA] = bind(currencyA$, null)
 const [useCurrencyB] = bind(currencyB$, null)
 
-const watchHistory = (currencySource$: Observable<Currency>) => currencySource$
+const saveHistory = (history: CurrencyList, historyKey: string) => {
+    cacheLocalStorage.set(historyKey, history)()
+    return history
+}
+const getCachedHistory = (historyKey: string): CurrencyList => pipe(cacheLocalStorage.get(historyKey)(), foldO(
+    () => [],
+    JSON.parse,
+))
+
+const watchHistory = (currencySource$: Observable<Currency>, cacheKey: string, initialHistory: CurrencyList = []) => currencySource$
     .pipe(
         scan<Currency, CurrencyList>((history, currency) => pipe(
             history,
             findIndex((c: Currency) => c.code == currency.code),
             foldO(
-                () => [currency, ...history],
+                () => saveHistory([currency, ...history], cacheKey),
                 () => history,
             ),
-        ), []),
+        ), initialHistory),
     )
 
-const [useHistoryA] = bind(watchHistory(currencyA$), [])
-const [useHistoryB] = bind(watchHistory(currencyB$), [])
+const historyCacheKeyA = 'HISTORY_A'
+const historyCacheKeyB = 'HISTORY_B'
+
+const cachedHistoryA = getCachedHistory(historyCacheKeyA)
+const cachedHistoryB = getCachedHistory(historyCacheKeyB)
+
+const [useHistoryA] = bind(watchHistory(currencyA$, historyCacheKeyA, cachedHistoryA), cachedHistoryA)
+const [useHistoryB] = bind(watchHistory(currencyB$, historyCacheKeyB, cachedHistoryB), cachedHistoryB)
 
 const [inputA$, setInputA] = createSignal<InputTuple>()
 const [inputB$, setInputB] = createSignal<InputTuple>()
@@ -63,8 +79,12 @@ const watchValue = (
                     const exchange = exchangeRateOrNull(exchangeRate)
                     if (value !== '') {
                         if (exchange) {
+                            const targetValue
+                            = (value / exchange.rate[inputCurrency.code]!) // Translate current currency value to basic currency
+                            * exchange.rate[targetCurrency.code]! // Translate basic currency to target
+
                             setTargetValue(
-                                [(value / exchange.rate[inputCurrency.code]!) * exchange.rate[targetCurrency.code]!, false],
+                                [Number(targetValue.toFixed(2)), false],
                             )
                         }
                     } else {

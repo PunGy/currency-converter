@@ -34,7 +34,12 @@ export const CurrencyBox: FC<CurrencyBoxProps> = ({
             <CurrencySelector currencies={currenciesToSelect} select={setCurrency} value={activeCurrency} />
         </Grid>
         <Grid item>
-            <CurrencyInput disabled={activeCurrency == null} onValueChange={flow(convert, setValue)} type="number" value={value} />
+            <CurrencyInput
+                disabled={activeCurrency == null}
+                onValueChange={flow(convert, setValue)}
+                type="number"
+                value={value}
+            />
         </Grid>
     </Grid>
 )

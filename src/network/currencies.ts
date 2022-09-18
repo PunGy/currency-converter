@@ -76,7 +76,6 @@ const FETCH_EXCHANGE = false
 const USE_CACHED = true
 export const [useExchangeRate, exchangeRate$] = bind<ExchangeRateResponse>(
     exchangeRateDate$.pipe(
-        tap(console.log),
         switchMap((date) => (
             pipe(
                 cachedExchangeRate(),

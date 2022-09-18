@@ -7,9 +7,10 @@ import { pipe } from 'fp-ts/lib/function'
 export interface CurrenciesHistoryProps {
     list: CurrencyList;
     active: Currency | null;
+    select: (currency: Currency) => void;
 }
 
-export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, active }) => (
+export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, active, select }) => (
     <Stack direction="row" spacing={1}>
         {list.map(currency => (
             pipe(
@@ -25,7 +26,7 @@ export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, active }) 
                         }}
                         color={isActive ? 'primary' : 'default'}
                         label={currency.code.toUpperCase()}
-                        // onClick={() => onSelectCurrency(currency)}
+                        onClick={() => select(currency)}
                         clickable
                         key={currency.code}
                     />
