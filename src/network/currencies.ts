@@ -1,4 +1,3 @@
-import * as cacheLocalStorage from '#app/localStorage'
 import { CurrenciesEntries, CurrencyList, ExchangeRate } from '#app/types'
 
 import * as E from 'fp-ts/lib/Either'
@@ -8,7 +7,7 @@ import { catchError, of, mergeMap, switchMap, map, startWith } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { bind } from '@react-rxjs/core'
 import { createSignal } from '@react-rxjs/utils'
-import { flow, pipe } from 'fp-ts/lib/function'
+import { flow } from 'fp-ts/lib/function'
 import { DEFAULT_EXCHANGE_DATE } from '#app/constants'
 
 const currencyURL = (date: string, endpoint: string) => `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${date}/${endpoint}`
