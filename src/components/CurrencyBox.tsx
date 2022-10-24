@@ -1,6 +1,6 @@
 import { FC } from 'react'
-import { Grid, GridProps } from '@mui/material'
-import { flow } from 'fp-ts/lib/function'
+import Grid, { GridProps } from '@mui/material/Grid'
+import { flow } from 'fp-ts/function'
 import { CurrenciesResponse } from '../network/currencies'
 import { CurrenciesHistory } from './CurrenciesHistory'
 import { CurrencyInput } from './CurrencyInput'

@@ -1,8 +1,9 @@
 import { FC } from 'react'
-import { Stack, Chip } from '@mui/material'
+import Stack from '@mui/material/Stack'
+import Chip from '@mui/material/Chip'
 import { grey } from '@mui/material/colors'
 import { Currency, CurrencyList } from '#app/types'
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 export interface CurrenciesHistoryProps {
     list: CurrencyList;

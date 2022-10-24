@@ -1,14 +1,15 @@
-import { Container, Grid } from '@mui/material'
+import Container from '@mui/material/Container'
+import Grid from '@mui/material/Grid'
 import { FC } from 'react'
 
 import { createSignal } from '@react-rxjs/utils'
 import { map, Observable, scan, combineLatest } from 'rxjs'
 import { bind } from '@react-rxjs/core'
 
-import { fold as foldO } from 'fp-ts/lib/Option'
-import { getOrElse as getOrElseE } from 'fp-ts/lib/Either'
-import { findIndex } from 'fp-ts/lib/Array'
-import { pipe } from 'fp-ts/lib/function'
+import { fold as foldO } from 'fp-ts/Option'
+import { findIndex } from 'fp-ts/Array'
+import { getOrElse as getOrElseE } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
 import { CurrencyBox } from './components/CurrencyBox'
 import { useListOfCurrencies, exchangeRate$, ExchangeRateResponse, APIError } from './network/currencies'

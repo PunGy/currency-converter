@@ -1,10 +1,12 @@
 import { Currency, CurrencyList } from '#app/types'
-import { Autocomplete, Box, BoxProps, createFilterOptions, TextFieldProps } from '@mui/material'
+import Box, { BoxProps } from '@mui/material/Box'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
+import type { TextFieldProps } from '@mui/material/TextField'
 import { FC } from 'react'
 import { CurrencyInput } from './CurrencyInput'
-import { fold as foldO } from 'fp-ts/lib/Option'
-import { fold as foldE } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { fold as foldO } from 'fp-ts/Option'
+import { fold as foldE } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import { CurrenciesResponse } from '#app/network/currencies'
 
 const filterOptions = createFilterOptions({

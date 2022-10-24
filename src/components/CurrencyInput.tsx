@@ -1,4 +1,4 @@
-import { TextFieldProps, TextField } from '@mui/material'
+import TextField, { TextFieldProps } from '@mui/material/TextField'
 import { FC } from 'react'
 
 type CurrencyInputProps = TextFieldProps & {
