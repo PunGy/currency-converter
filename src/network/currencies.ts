@@ -50,7 +50,6 @@ export const [useListOfCurrencies] = bind<CurrenciesResponse>(
 )
 
 
-
 interface ExchangeRateRaw {
     date: string;
     'usd': Record<string, number>;
@@ -63,7 +62,7 @@ const mapExchangeResponseToRate = (exchangeResponse: ExchangeRateRaw): ExchangeR
 
 export const [useExchangeRate, exchangeRate$] = bind<ExchangeRateResponse>(
     exchangeRateDate$.pipe(
-        startWith('latest'),
+        startWith(DEFAULT_EXCHANGE_DATE),
         switchMap((date) => fromFetch(currencyURL(date, 'currencies/usd.min.json'))
             .pipe(
                 mergeMap(mapResponse<ExchangeRateRaw>()),

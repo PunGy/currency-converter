@@ -9,7 +9,7 @@ import { bind } from '@react-rxjs/core'
 import { fold as foldO } from 'fp-ts/Option'
 import { findIndex } from 'fp-ts/Array'
 import { getOrElse as getOrElseE } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { flow, pipe } from 'fp-ts/function'
 
 import { CurrencyBox } from './components/CurrencyBox'
 import { useListOfCurrencies, exchangeRate$, ExchangeRateResponse, APIError } from './network/currencies'
@@ -27,10 +27,13 @@ const saveHistory = (history: CurrencyList, historyKey: string) => {
     cacheLocalStorage.set(historyKey, history)()
     return history
 }
-const getCachedHistory = (historyKey: string): CurrencyList => pipe(cacheLocalStorage.get(historyKey)(), foldO(
-    () => [],
-    JSON.parse,
-))
+const getCachedHistory = (historyKey: string): CurrencyList => flow(
+    cacheLocalStorage.get(historyKey),
+    foldO(
+        () => [],
+        JSON.parse,
+    ),
+)()
 
 const watchHistory = (currencySource$: Observable<Currency>, cacheKey: string, initialHistory: CurrencyList = []) => currencySource$
     .pipe(
@@ -56,6 +59,7 @@ const [useHistoryB] = bind(watchHistory(currencyB$, historyCacheKeyB, cachedHist
 const [inputA$, setInputA] = createSignal<InputTuple>()
 const [inputB$, setInputB] = createSignal<InputTuple>()
 
+// Just to simplify to the two possible cases - is exchange rate just OK or not
 const exchangeRateOrNull: (response: ExchangeRateResponse) => ExchangeRate | null
     = foldO(
         () => null,
@@ -85,6 +89,10 @@ const watchValue = (
                             * exchange.rate[targetCurrency.code]! // Translate basic currency to target
 
                             setTargetValue(
+                                /**
+                                 * Set target value with second isSource parameter to false
+                                 * so it would not recursively change again the current input
+                                */
                                 [Number(targetValue.toFixed(2)), false],
                             )
                         }
@@ -108,7 +116,7 @@ const [useValueB] = bind(
 )
 
 const sourceInput = (inputSetter: (tuple: InputTuple) => void) => (value: InputValue) => {
-    inputSetter([value, true])
+    inputSetter([value, true]) // Setting the right parameter to "true" would trigger the change of the opposite input
 }
 
 const App: FC = () => {

@@ -19,5 +19,5 @@ export interface ExchangeRate {
 export type InputValue = number | ''
 export type InputTuple = [
     number | '', // Value of an input
-    boolean, // Is this input a source (so it should change )
+    boolean, // Is this input a source (so it should change the opposite input)
 ]
