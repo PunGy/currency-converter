@@ -3,45 +3,55 @@ import Grid from '@mui/material/Grid'
 import { FC } from 'react'
 
 import { createSignal } from '@react-rxjs/utils'
-import { map, Observable, scan, combineLatest } from 'rxjs'
+import { map, Observable, scan, combineLatest, tap } from 'rxjs'
 import { bind } from '@react-rxjs/core'
 
 import { fold as foldO } from 'fp-ts/Option'
 import { findIndex } from 'fp-ts/Array'
 import { getOrElse as getOrElseE } from 'fp-ts/Either'
-import { flow, pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 
 import { CurrencyBox } from './components/CurrencyBox'
 import { useListOfCurrencies, exchangeRate$, ExchangeRateResponse, APIError } from './network/currencies'
 import { SwapCurrenciesButton } from './components/SwapCurrenciesButton'
 import { Currency, CurrencyList, ExchangeRate, InputTuple, InputValue } from './types'
-import * as cacheLocalStorage from '#app/localStorage'
+import { getCachedHistory, getLatestSelectedCurrency, setLatestSelectedCurrency, saveHistory } from '#app/localStorage'
 
 const [currencyA$, setCurrencyA] = createSignal<Currency>()
 const [currencyB$, setCurrencyB] = createSignal<Currency>()
 
-const [useCurrencyA] = bind(currencyA$, null)
-const [useCurrencyB] = bind(currencyB$, null)
+const latestCacheKeyA = 'LATEST_A'
+const latestCacheKeyB = 'LATEST_B'
 
-const saveHistory = (history: CurrencyList, historyKey: string) => {
-    cacheLocalStorage.set(historyKey, history)()
-    return history
-}
-const getCachedHistory = (historyKey: string): CurrencyList => flow(
-    cacheLocalStorage.get(historyKey),
-    foldO(
-        () => [],
-        JSON.parse,
-    ),
-)()
+const [useCurrencyA] = bind(
+    currencyA$
+        .pipe(tap(setLatestSelectedCurrency(latestCacheKeyA))),
+    getLatestSelectedCurrency(latestCacheKeyA),
+)
+const [useCurrencyB] = bind(
+    currencyB$
+        .pipe(tap(setLatestSelectedCurrency(latestCacheKeyB))),
+    getLatestSelectedCurrency(latestCacheKeyB),
+)
 
+const MAX_HISTORY_LENGTH = 5
 const watchHistory = (currencySource$: Observable<Currency>, cacheKey: string, initialHistory: CurrencyList = []) => currencySource$
     .pipe(
         scan<Currency, CurrencyList>((history, currency) => pipe(
             history,
             findIndex((c: Currency) => c.code == currency.code),
             foldO(
-                () => saveHistory([currency, ...history], cacheKey),
+                () => saveHistory(
+                    [
+                        currency,
+                        ...(
+                            history.length >= MAX_HISTORY_LENGTH
+                                ? history.slice(0, -1)
+                                : history
+                        ),
+                    ],
+                    cacheKey,
+                ),
                 () => history,
             ),
         ), initialHistory),
