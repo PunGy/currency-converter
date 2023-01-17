@@ -63,8 +63,10 @@ const historyCacheKeyB = 'HISTORY_B'
 const cachedHistoryA = getCachedHistory(historyCacheKeyA)
 const cachedHistoryB = getCachedHistory(historyCacheKeyB)
 
-const [useHistoryA] = bind(watchHistory(currencyA$, historyCacheKeyA, cachedHistoryA), cachedHistoryA)
-const [useHistoryB] = bind(watchHistory(currencyB$, historyCacheKeyB, cachedHistoryB), cachedHistoryB)
+const historyA$ = watchHistory(currencyA$, historyCacheKeyA, cachedHistoryA)
+const historyB$ = watchHistory(currencyB$, historyCacheKeyB, cachedHistoryB)
+const [useHistoryA] = bind(historyA$, cachedHistoryA)
+const [useHistoryB] = bind(historyB$, cachedHistoryB)
 
 const [inputA$, setInputA] = createSignal<InputTuple>()
 const [inputB$, setInputB] = createSignal<InputTuple>()
@@ -145,6 +147,7 @@ const App: FC = () => {
             <Grid container direction="column">
                 <Grid item>
                     <CurrencyBox
+                        align="top"
                         value={valueA}
                         setCurrency={setCurrencyA}
                         currenciesToSelect={allCurrenciesList}
@@ -160,7 +163,7 @@ const App: FC = () => {
 
                 <Grid item>
                     <CurrencyBox
-                        reverse
+                        align="bottom"
                         value={valueB}
                         setCurrency={setCurrencyB}
                         currenciesToSelect={allCurrenciesList}

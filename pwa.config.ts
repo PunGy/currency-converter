@@ -1,5 +1,7 @@
 import { ManifestOptions, VitePWA } from 'vite-plugin-pwa'
 
+export const base = '/currency-converter/'
+
 const manifest: Partial<ManifestOptions> = {
     name: "Currency converter",
     short_name: "Currency",
@@ -7,13 +9,13 @@ const manifest: Partial<ManifestOptions> = {
     theme_color: '#ffffff',
     icons: [
         {
-            src: "/android-chrome-192x192.png",
+            src: `${base}/android-chrome-192x192.png`,
             sizes: "192x192",
             type: "image/png",
             purpose: 'maskable',
         },
         {
-            src: "/android-chrome-512x512.png",
+            src: `${base}/android-chrome-512x512.png`,
             sizes: "512x512",
             type: "image/png"
         }

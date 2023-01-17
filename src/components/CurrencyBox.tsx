@@ -15,7 +15,7 @@ export interface CurrencyBoxProps extends GridProps {
     currenciesToSelect: CurrenciesResponse;
     activeCurrency: Currency | null;
     value: InputValue;
-    reverse?: boolean;
+    align: 'top' | 'bottom';
 }
 export const CurrencyBox: FC<CurrencyBoxProps> = ({
     currenciesToSelect,
@@ -24,11 +24,11 @@ export const CurrencyBox: FC<CurrencyBoxProps> = ({
     value,
     setValue,
     history,
-    reverse = false,
+    align,
 }) => (
-    <Grid container direction={reverse ? 'column-reverse' : 'column'} spacing={2}>
+    <Grid container direction={align === 'bottom' ? 'column-reverse' : 'column'} spacing={2}>
         <Grid item>
-            <CurrenciesHistory active={activeCurrency} select={setCurrency} list={history} />
+            <CurrenciesHistory align={align} active={activeCurrency} select={setCurrency} list={history} />
         </Grid>
         <Grid item>
             <CurrencySelector currencies={currenciesToSelect} select={setCurrency} value={activeCurrency} />
