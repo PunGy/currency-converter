@@ -1,61 +1,41 @@
 import Container from '@mui/material/Container'
 import Grid from '@mui/material/Grid'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 
 import { createSignal } from '@react-rxjs/utils'
-import { map, Observable, scan, combineLatest, tap } from 'rxjs'
+import { map, Observable, combineLatest, tap } from 'rxjs'
 import { bind } from '@react-rxjs/core'
 
 import { fold as foldO } from 'fp-ts/Option'
-import { findIndex } from 'fp-ts/Array'
 import { getOrElse as getOrElseE } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
 
 import { CurrencyBox } from './components/CurrencyBox'
 import { useListOfCurrencies, exchangeRate$, ExchangeRateResponse, APIError } from './network/currencies'
 import { SwapCurrenciesButton } from './components/SwapCurrenciesButton'
-import { Currency, CurrencyList, ExchangeRate, InputTuple, InputValue } from './types'
-import { getCachedHistory, getLatestSelectedCurrency, setLatestSelectedCurrency, saveHistory } from '#app/localStorage'
+import { Currency, ExchangeRate, InputTuple, InputValue } from './types'
+import { getCachedHistory, getLatestSelectedCurrency, setLatestSelectedCurrency } from '#app/localStorage'
+import { Action, watchCurrency, watchHistory } from '#app/actions'
 
-const [currencyA$, setCurrencyA] = createSignal<Currency>()
-const [currencyB$, setCurrencyB] = createSignal<Currency>()
+const [historyActionA$, dispatchHistoryActionA] = createSignal<Action>()
+const [historyActionB$, dispatchHistoryActionB] = createSignal<Action>()
 
 const latestCacheKeyA = 'LATEST_A'
 const latestCacheKeyB = 'LATEST_B'
 
+const cachedCurrencyA = getLatestSelectedCurrency(latestCacheKeyA)
+const cachedCurrencyB = getLatestSelectedCurrency(latestCacheKeyB)
+
+const currencyA$ = watchCurrency(historyActionA$, cachedCurrencyA)
+const currencyB$ = watchCurrency(historyActionB$, cachedCurrencyB)
+
 const [useCurrencyA] = bind(
-    currencyA$
-        .pipe(tap(setLatestSelectedCurrency(latestCacheKeyA))),
-    getLatestSelectedCurrency(latestCacheKeyA),
+    currencyA$.pipe(tap(setLatestSelectedCurrency(latestCacheKeyA))),
+    cachedCurrencyA,
 )
 const [useCurrencyB] = bind(
-    currencyB$
-        .pipe(tap(setLatestSelectedCurrency(latestCacheKeyB))),
-    getLatestSelectedCurrency(latestCacheKeyB),
+    currencyB$.pipe(tap(setLatestSelectedCurrency(latestCacheKeyB))),
+    cachedCurrencyB,
 )
-
-const MAX_HISTORY_LENGTH = 5
-const watchHistory = (currencySource$: Observable<Currency>, cacheKey: string, initialHistory: CurrencyList = []) => currencySource$
-    .pipe(
-        scan<Currency, CurrencyList>((history, currency) => pipe(
-            history,
-            findIndex((c: Currency) => c.code == currency.code),
-            foldO(
-                () => saveHistory(
-                    [
-                        currency,
-                        ...(
-                            history.length >= MAX_HISTORY_LENGTH
-                                ? history.slice(0, -1)
-                                : history
-                        ),
-                    ],
-                    cacheKey,
-                ),
-                () => history,
-            ),
-        ), initialHistory),
-    )
 
 const historyCacheKeyA = 'HISTORY_A'
 const historyCacheKeyB = 'HISTORY_B'
@@ -63,11 +43,17 @@ const historyCacheKeyB = 'HISTORY_B'
 const cachedHistoryA = getCachedHistory(historyCacheKeyA)
 const cachedHistoryB = getCachedHistory(historyCacheKeyB)
 
-const [useHistoryA] = bind(watchHistory(currencyA$, historyCacheKeyA, cachedHistoryA), cachedHistoryA)
-const [useHistoryB] = bind(watchHistory(currencyB$, historyCacheKeyB, cachedHistoryB), cachedHistoryB)
+const historyA$ = watchHistory(historyActionA$, historyCacheKeyA, cachedHistoryA)
+const historyB$ = watchHistory(historyActionB$, historyCacheKeyB, cachedHistoryB)
+const [useHistoryA] = bind(historyA$, cachedHistoryA)
+const [useHistoryB] = bind(historyB$, cachedHistoryB)
 
 const [inputA$, setInputA] = createSignal<InputTuple>()
 const [inputB$, setInputB] = createSignal<InputTuple>()
+
+/**
+
+ */
 
 // Just to simplify to the two possible cases - is exchange rate just OK or not
 const exchangeRateOrNull: (response: ExchangeRateResponse) => ExchangeRate | null
@@ -78,8 +64,8 @@ const exchangeRateOrNull: (response: ExchangeRateResponse) => ExchangeRate | nul
 
 const watchValue = (
     inputValue$: Observable<InputTuple>,
-    inputCurrency$: Observable<Currency>,
-    targetCurrency$: Observable<Currency>,
+    inputCurrency$: Observable<Currency | null>,
+    targetCurrency$: Observable<Currency | null>,
     setTargetValue: (val: InputTuple) => void,
 ) => (
     combineLatest([inputValue$, inputCurrency$, targetCurrency$, exchangeRate$])
@@ -93,14 +79,14 @@ const watchValue = (
                 if (isSource) {
                     const exchange = exchangeRateOrNull(exchangeRate)
                     if (value !== '') {
-                        if (exchange) {
+                        if (exchange && inputCurrency && targetCurrency) {
                             const targetValue
                             = (value / exchange.rate[inputCurrency.code]!) // Translate current currency value to basic currency
                             * exchange.rate[targetCurrency.code]! // Translate basic currency to target
 
                             setTargetValue(
                                 /**
-                                 * Set target value with second isSource parameter to false
+                                 * Set target value with second isSource parameter to false,
                                  * so it would not recursively change again the current input
                                 */
                                 [Number(targetValue.toFixed(2)), false],
@@ -140,17 +126,27 @@ const App: FC = () => {
     const currencyA = useCurrencyA()
     const currencyB = useCurrencyB()
 
+    const setValueA = sourceInput(setInputA)
+    const setValueB = sourceInput(setInputB)
+
+    useEffect(() => {
+        if (currencyA) {
+            setValueA(1)
+        }
+    }, [])
+
     return (
         <Container maxWidth="sm" sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
             <Grid container direction="column">
                 <Grid item>
                     <CurrencyBox
+                        align="top"
                         value={valueA}
-                        setCurrency={setCurrencyA}
                         currenciesToSelect={allCurrenciesList}
                         history={historyA}
                         activeCurrency={currencyA}
-                        setValue={sourceInput(setInputA)}
+                        dispatchAction={dispatchHistoryActionA}
+                        setValue={setValueA}
                     />
                 </Grid>
 
@@ -160,13 +156,13 @@ const App: FC = () => {
 
                 <Grid item>
                     <CurrencyBox
-                        reverse
+                        align="bottom"
                         value={valueB}
-                        setCurrency={setCurrencyB}
                         currenciesToSelect={allCurrenciesList}
                         history={historyB}
                         activeCurrency={currencyB}
-                        setValue={sourceInput(setInputB)}
+                        dispatchAction={dispatchHistoryActionB}
+                        setValue={setValueB}
                     />
                 </Grid>
             </Grid>

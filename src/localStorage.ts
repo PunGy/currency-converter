@@ -13,11 +13,11 @@ export const set = <V>(key: string, value: V): IOEither<any, V> => tryCatch<any,
     identity,
 )
 
-export const setLatestSelectedCurrency = (key: string) => (currency: Currency) => {
+export const setLatestSelectedCurrency = (key: string) => (currency: Currency | null) => {
     set(key, currency)()
     return currency
 }
-export const getLatestSelectedCurrency = (key: string): Currency => flow(
+export const getLatestSelectedCurrency = (key: string): Currency | null => flow(
     get(key),
     fold(
         () => null,

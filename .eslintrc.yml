@@ -4,7 +4,7 @@ extends:
   - plugin:import/typescript
   - plugin:security/recommended
 settings:
-  import/resolver: 
+  import/resolver:
     typescript:
       extensionAlias:
         ".js":
@@ -80,6 +80,7 @@ rules:
   no-useless-return: error
   radix: error
   no-shadow: 'off'
+  no-prototype-builtins: off
   no-use-before-define:
     - error
     - functions: false
@@ -140,7 +141,7 @@ rules:
   # Import
 
   import/no-cycle: error
-  
+
   # Security
   security/detect-object-injection: off # Since we are using TypeScript, we are always sure about types passed into objects
 
