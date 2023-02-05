@@ -4,15 +4,21 @@ import Popover from '@mui/material/Popover'
 import { CurrencyChip, ChipManagerRow } from '#app/components/CurrencyChip'
 import { Currency, CurrencyList } from '#app/types'
 import { pipe } from 'fp-ts/function'
+import { Dispatcher, selectCurrency } from '#app/actions'
 
 export interface CurrenciesHistoryProps {
     list: CurrencyList;
     active: Currency | null;
-    select: (currency: Currency) => void;
     align: 'top' | 'bottom';
+    dispatchAction: Dispatcher;
 }
 
-export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, align, active, select }) => {
+export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({
+    list,
+    align,
+    active,
+    dispatchAction,
+}) => {
     const [chipRef, setChipRef] = useState<null | HTMLElement>(null)
     const [manageCurrency, setManageCurrency] = useState<Currency | null>(null)
 
@@ -41,16 +47,25 @@ export const CurrenciesHistory: FC<CurrenciesHistoryProps> = ({ list, align, act
                     horizontal: 'center',
                 }}
             >
-                <ChipManagerRow currency={manageCurrency!}/>
+                {manageCurrency && (
+                    <ChipManagerRow
+                        dispatchAction={dispatchAction}
+                        currency={manageCurrency}
+                        index={list.findIndex((c) => c.code === manageCurrency.code)}
+                        history={list}
+                        onClose={closeManagePanelHandler}
+                    />
+                )}
             </Popover>
-            {list.map(currency => (
+            {list.map((currency) => (
                 pipe(
-                    active !== null && active.code === currency.code,
-                    (isActive) => (
+                    [active !== null && active.code === currency.code, 'locked' in currency] as const,
+                    ([isActive, isLocked]) => (
                         <CurrencyChip
                             isActive={isActive}
+                            isLocked={isLocked}
                             currency={currency}
-                            onSelect={select}
+                            onSelect={selectCurrency(dispatchAction)}
                             onLongPress={openManagePanelHandler}
                             key={currency.code}
                         />

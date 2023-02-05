@@ -1,4 +1,4 @@
-import { FC, forwardRef, memo, useRef } from 'react'
+import { FC, forwardRef, memo, useCallback, useRef } from 'react'
 
 import Chip from '@mui/material/Chip'
 import IconButton from '@mui/material/IconButton'
@@ -9,37 +9,62 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import LockIcon from '@mui/icons-material/Lock'
+import UnlockIcon from '@mui/icons-material/LockOpen'
 
-import { Currency } from '#app/types'
+import { Currency, CurrencyList } from '#app/types'
+import { ActionTypes, Dispatcher } from '#app/actions'
 
 export interface ChipManagerProps {
     currency: Currency;
+    index: number;
+    dispatchAction: Dispatcher;
+    history: CurrencyList;
+    onClose: () => void;
 }
-export const ChipManagerRow: FC<ChipManagerProps> = forwardRef(({ currency }, ref) => (
-    <Stack direction="row" spacing={1} ref={ref}>
-        <IconButton color="error">
-            <DeleteIcon />
-        </IconButton>
-        <IconButton>
-            <ArrowBackIcon />
-        </IconButton>
-        <IconButton>
-            <ArrowForwardIcon />
-        </IconButton>
-        <IconButton>
-            <LockIcon />
-        </IconButton>
-    </Stack>
-))
+export const ChipManagerRow: FC<ChipManagerProps> = forwardRef(({ currency, dispatchAction, index, history, onClose }, ref) => {
+    const deleteHandler = useCallback(() => {
+        dispatchAction({ type: ActionTypes.REMOVE, payload: index })
+        onClose()
+    }, [index, dispatchAction])
+
+    const swapHandler = useCallback((indexA: number, indexB: number) => {
+        if (indexA < 0 || indexB < 0 || indexA >= history.length || indexB >= history.length) return
+
+        dispatchAction({ type: ActionTypes.SWAP, payload: [indexA, indexB] })
+    }, [dispatchAction, index, history])
+
+    const lockHandler = useCallback(() => {
+        dispatchAction({ type: ActionTypes.LOCK, payload: index })
+        onClose()
+    }, [index, dispatchAction, onClose])
+
+    return (
+        <Stack direction="row" spacing={1} ref={ref}>
+            <IconButton color="error" onClick={deleteHandler}>
+                <DeleteIcon/>
+            </IconButton>
+            <IconButton onClick={() => swapHandler(index, index - 1)}>
+                <ArrowBackIcon />
+            </IconButton>
+            <IconButton onClick={() => swapHandler(index, index + 1)}>
+                <ArrowForwardIcon/>
+            </IconButton>
+            <IconButton onClick={lockHandler}>
+                {'locked' in currency ? <UnlockIcon /> : <LockIcon />}
+            </IconButton>
+        </Stack>
+    )
+})
 
 export interface CurrencyChipProps {
     isActive: boolean;
     currency: Currency;
     onSelect: (currency: Currency) => void;
     onLongPress: (currency: Currency, target: HTMLElement) => void;
+    isLocked: boolean;
 }
 
-export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, onSelect, onLongPress }) => {
+export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, onSelect, onLongPress, isLocked }) => {
     const timerRef = useRef<any>() // Timer
     const isLongPress = useRef<boolean>() // Long press toggle
     const chipRef = useRef<HTMLDivElement>(null) // Chip ref
@@ -48,10 +73,18 @@ export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, o
         <Chip
             ref={chipRef}
             sx={{
-                backgroundColor: theme => isActive ? theme.palette.primary.light : grey[100],
+                backgroundColor: theme => isActive
+                    ? theme.palette.primary.light
+                    : isLocked
+                        ? '#ff748e'
+                        : grey[100],
                 border: theme => `1px solid ${isActive ? theme.palette.primary.dark : grey[600]}`,
                 '&:hover': {
-                    backgroundColor: theme => isActive ? theme.palette.primary.light : grey[300],
+                    backgroundColor: theme => isActive
+                        ? theme.palette.primary.light
+                        : isLocked
+                            ? '#ff97ab'
+                            : grey[300],
                 },
             }}
             color={isActive ? 'primary' : 'default'}
@@ -60,7 +93,7 @@ export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, o
                 timerRef.current = setTimeout(() => {
                     isLongPress.current = true
                     onLongPress(currency, chipRef.current!)
-                }, 1000)
+                }, 700)
             }}
             onMouseUp={() => {
                 clearTimeout(timerRef.current)

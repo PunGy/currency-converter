@@ -1,7 +1,12 @@
-export interface Currency {
+export interface UnlockedCurrency {
     code: string; // For example "usd"
     title: string; // For example "United States dollar"
 }
+export interface LockedCurrency extends UnlockedCurrency {
+    locked: number; // Position in the list of currencies where it should be locked
+}
+
+export type Currency = UnlockedCurrency | LockedCurrency
 
 export type CurrencyList = Array<Currency>
 

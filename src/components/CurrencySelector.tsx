@@ -25,7 +25,11 @@ export const CurrencySelectorInput: FC<CurrencySelectorInputProps> = ({ value, c
         options={currencies}
         filterOptions={filterOptions}
         isOptionEqualToValue={(option, value) => option.code === value.code}
-        getOptionLabel={({ code }) => code.toUpperCase()}
+        getOptionLabel={({ code }) => (
+            code
+                ? code.toUpperCase()
+                : ''
+        )}
         onChange={(_, value) => value && select(value)}
         autoHighlight
         renderOption={(props, option) => (
