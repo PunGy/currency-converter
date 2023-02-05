@@ -6,7 +6,6 @@ import { PWAConfig, base } from './pwa.config.js'
 
 const VISUALIZE_BUNDLE = false
 
-
 const plugins = [
     tsconfigPaths(),
     react(),

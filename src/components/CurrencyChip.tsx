@@ -69,6 +69,21 @@ export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, o
     const isLongPress = useRef<boolean>() // Long press toggle
     const chipRef = useRef<HTMLDivElement>(null) // Chip ref
 
+    const onPress = useCallback(() => {
+        timerRef.current = setTimeout(() => {
+            isLongPress.current = true
+            onLongPress(currency, chipRef.current!)
+        }, 700)
+    }, [currency, onLongPress])
+    const onRelease = useCallback(() => {
+        clearTimeout(timerRef.current)
+        if (isLongPress.current) {
+            isLongPress.current = false
+        } else {
+            onSelect(currency)
+        }
+    }, [currency, onSelect])
+
     return (
         <Chip
             ref={chipRef}
@@ -89,20 +104,10 @@ export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, o
             }}
             color={isActive ? 'primary' : 'default'}
             label={currency.code.toUpperCase()}
-            onMouseDown={() => {
-                timerRef.current = setTimeout(() => {
-                    isLongPress.current = true
-                    onLongPress(currency, chipRef.current!)
-                }, 700)
-            }}
-            onMouseUp={() => {
-                clearTimeout(timerRef.current)
-                if (isLongPress.current) {
-                    isLongPress.current = false
-                } else {
-                    onSelect(currency)
-                }
-            }}
+            onMouseDown={onPress}
+            onTouchStart={onPress}
+            onMouseUp={onRelease}
+            onTouchEnd={onRelease}
             clickable
         />
     )
