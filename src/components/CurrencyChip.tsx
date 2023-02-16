@@ -65,24 +65,15 @@ export interface CurrencyChipProps {
 }
 
 export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, onSelect, onLongPress, isLocked }) => {
-    const timerRef = useRef<any>() // Timer
-    const isLongPress = useRef<boolean>() // Long press toggle
     const chipRef = useRef<HTMLDivElement>(null) // Chip ref
 
-    const onPress = useCallback(() => {
-        timerRef.current = setTimeout(() => {
-            isLongPress.current = true
+    const onClick = useCallback(() => {
+        if (isActive) {
             onLongPress(currency, chipRef.current!)
-        }, 700)
-    }, [currency, onLongPress])
-    const onRelease = useCallback(() => {
-        clearTimeout(timerRef.current)
-        if (isLongPress.current) {
-            isLongPress.current = false
         } else {
             onSelect(currency)
         }
-    }, [currency, onSelect])
+    }, [currency, onSelect, isActive])
 
     return (
         <Chip
@@ -91,23 +82,20 @@ export const CurrencyChip: FC<CurrencyChipProps> = memo(({ isActive, currency, o
                 backgroundColor: theme => isActive
                     ? theme.palette.primary.light
                     : isLocked
-                        ? '#ff748e'
+                        ? '#B2F6FFFF'
                         : grey[100],
                 border: theme => `1px solid ${isActive ? theme.palette.primary.dark : grey[600]}`,
                 '&:hover': {
                     backgroundColor: theme => isActive
                         ? theme.palette.primary.light
                         : isLocked
-                            ? '#ff97ab'
+                            ? '#c9f7fd'
                             : grey[300],
                 },
             }}
             color={isActive ? 'primary' : 'default'}
             label={currency.code.toUpperCase()}
-            onMouseDown={onPress}
-            onTouchStart={onPress}
-            onMouseUp={onRelease}
-            onTouchEnd={onRelease}
+            onClick={onClick}
             clickable
         />
     )
