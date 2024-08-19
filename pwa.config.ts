@@ -7,6 +7,8 @@ const manifest: Partial<ManifestOptions> = {
     short_name: "Currency",
     description: "Currency exchange application",
     theme_color: '#ffffff',
+    display: 'standalone',
+    display_override: ['fullscreen', 'minimal-ui'],
     icons: [
         {
             src: `${base}android-chrome-192x192.png`,
