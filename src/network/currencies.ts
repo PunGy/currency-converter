@@ -10,7 +10,7 @@ import { createSignal } from '@react-rxjs/utils'
 import { flow } from 'fp-ts/function'
 import { DEFAULT_EXCHANGE_DATE } from '#app/constants'
 
-const currencyURL = (date: string, endpoint: string) => `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${date}/${endpoint}`
+const currencyURL = (date: string, endpoint: string) => `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/${endpoint}`
 
 export const [exchangeRateDate$, setExchangeRateDate] = createSignal<string>()
 
