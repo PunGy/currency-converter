@@ -1,6 +1,6 @@
 import { ManifestOptions, VitePWA } from 'vite-plugin-pwa'
 
-export const base = '/currency-converter/'
+export const base = '/'
 
 const manifest: Partial<ManifestOptions> = {
     name: "Currency converter",
@@ -9,13 +9,13 @@ const manifest: Partial<ManifestOptions> = {
     theme_color: '#ffffff',
     icons: [
         {
-            src: `${base}/android-chrome-192x192.png`,
+            src: `${base}android-chrome-192x192.png`,
             sizes: "192x192",
             type: "image/png",
             purpose: 'maskable',
         },
         {
-            src: `${base}/android-chrome-512x512.png`,
+            src: `${base}android-chrome-512x512.png`,
             sizes: "512x512",
             type: "image/png"
         }
@@ -29,7 +29,7 @@ export const PWAConfig = () => VitePWA({
     workbox: {
         runtimeCaching: [
             {
-                urlPattern: 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/**/*',
+                urlPattern: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/**/*',
                 handler: 'NetworkFirst',
                 options: {
                     cacheName: 'Currencies',
