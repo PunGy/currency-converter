@@ -26,6 +26,7 @@ export const PWAConfig = () => VitePWA({
     registerType: 'autoUpdate',
     injectRegister: 'inline',
     manifest,
+    strategies: 'generateSW',
     workbox: {
         runtimeCaching: [
             {
@@ -38,6 +39,16 @@ export const PWAConfig = () => VitePWA({
                     }
                 }
             },
+            {
+                urlPattern: 'https://currency-app.pungy.me/**/*',
+                handler: 'NetworkFirst',
+                options: {
+                    cacheName: 'Currencies',
+                    cacheableResponse: {
+                        statuses: [200]
+                    }
+                }
+            }
         ]
     }
 })
